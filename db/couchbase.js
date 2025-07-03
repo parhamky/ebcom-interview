@@ -16,6 +16,7 @@ async function initCouchbase() {
     bucket = cluster.bucket(bucketName);
     collection = await bucket.scope('encrypted').collection('encryptedvouchers')
     console.log('Connected to Couchbase and opened bucket:', bucketName);
+
 }
 
 async function getCollection() {

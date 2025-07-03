@@ -51,14 +51,17 @@ exports.claimSingleVoucher = async (req, reply) => {
     const { code, amount } = req.body
     const collection = await getCollection()
     const encrypted = getEncodedVoucher(code)
+    
     if (await validateVoucher(code, amount)) {
+      const {cas} = collection.get(encrypted)
+        await collection.remove(encrypted,{ cas })
         reply.code(200).send({ status: 'claimed', amount })
-        await collection.remove(encrypted)
         await ensureMinVouchers(200) // Ensure minimum vouchers after claiming
     }else{
       return reply.code(400).send({ error: 'Validation failed' })
     }
   } catch (err) {
+    console.log(err)
     reply.code(500).send({ error: 'Claim failed' })
   }
 }
@@ -76,7 +79,10 @@ exports.claimBulkVouchers = async (req, reply) => {
 
     for (const { code } of vouchers) {
       const encrypted = getEncodedVoucher(code)
-      await collection.remove(encrypted)
+
+        const {cas} = collection.get(encrypted)
+
+      await collection.remove(encrypted,{cas})
       await ensureMinVouchers(200) // Ensure minimum vouchers after claiming
     }
     reply.code(200).send({ status: 'claimed', count: vouchers.length })
@@ -99,7 +105,9 @@ exports.claimSingleVoucherWithUser = async (req, reply) => {
     const storedAmount = doc.content.amount
 
     if (await validateVoucher(code, storedAmount)) {
-      await collection.remove(encrypted)
+        const {cas} = collection.get(encrypted)
+      await collection.remove(encrypted,{ cas })
+        await ensureMinVouchers()
       await logConsumerAction(code, storedAmount, user)
       reply.code(200).send({ status: 'claimed', amount: storedAmount, user })
     } else {
