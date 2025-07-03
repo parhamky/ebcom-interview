@@ -1,4 +1,4 @@
-const {generateSingleVoucher ,  generateBulkVouchers , claimBulkVouchers,claimSingleVoucher} = require('../controllers/vouchers')
+const {generateSingleVoucher ,  generateBulkVouchers , claimBulkVouchers,claimSingleVoucher,claimSingleVoucherWithUser} = require('../controllers/vouchers')
 
 const generateSingleVoucherSchema = {
   params: {
@@ -153,12 +153,50 @@ const claimBulkVouchersSchema = {
   handler: claimBulkVouchers
 }
 
+const claimSingleVoucherWithUserSchema = {
+  body: {
+    type: 'object',
+    properties: {
+      code: { type: 'string' },
+      amount: { type: 'number' },
+      user: { type: 'string' }
+    },
+    required: ['code', 'amount', 'user']
+  },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        status: { type: 'string' },
+        amount: { type: 'number' },
+        user: { type: 'string' }
+      },
+      required: ['status', 'amount', 'user']
+    },
+    400: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    },
+    500: {
+      type: 'object',
+      properties: {
+        error: { type: 'string' }
+      }
+    }
+  },
+  handler: claimSingleVoucherWithUser
+}
+
+
 
 const routes = async (fastify, opts) => {
   fastify.get('/voucher/:amount', generateSingleVoucherSchema)
   fastify.get('/voucher/bulk/:count', generateBulkVouchersSchema)
   fastify.post('/voucher/claim', claimSingleVoucherSchema)
   fastify.post('/voucher/claim-bulk', claimBulkVouchersSchema)
+  fastify.post('/voucher/claim-with-user', claimSingleVoucherWithUserSchema)
 }
 
 module.exports = routes

@@ -1,9 +1,10 @@
+require('dotenv').config();
 const couchbase = require('couchbase');
-// Update these with your Couchbase server details
-const clusterConnStr = 'couchbase://127.0.0.1';
-const username = 'Administrator';
-const password = 'password';
-const bucketName = 'vouchers';
+// Load Couchbase config from environment variables
+const clusterConnStr = process.env.COUCHBASE_CONNSTR;
+const username = process.env.COUCHBASE_USER;
+const password = process.env.COUCHBASE_PASS;
+const bucketName = process.env.COUCHBASE_BUCKET;
 
 let cluster, bucket, collection;
 

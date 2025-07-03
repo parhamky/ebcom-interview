@@ -1,6 +1,7 @@
 const { getCollection } = require('../db/couchbase')
 const {generateVoucher,getEncodedVoucher} = require('../vouvherGenrator/voucher')
 const {validateVoucher,ensureMinVouchers} = require('../voucherManager.js')
+const { logConsumerAction } = require('../consumer.js') 
 
 exports.generateSingleVoucher = async (req, reply) => {
   try {
@@ -81,6 +82,32 @@ exports.claimBulkVouchers = async (req, reply) => {
     reply.code(200).send({ status: 'claimed', count: vouchers.length })
   } catch (err) {
     reply.code(500).send({ error: 'Bulk claim failed' })
+  }
+}
+
+exports.claimSingleVoucherWithUser = async (req, reply) => {
+  try {
+    const { code, amount, user } = req.body
+    if (typeof user !== 'string' || user.trim() === '') {
+      return reply.code(400).send({ error: 'Invalid user parameter' })
+    }
+
+    const collection = await getCollection()
+    const encrypted = getEncodedVoucher(code)
+
+    const doc = await collection.get(encrypted)
+    const storedAmount = doc.content.amount
+
+    if (await validateVoucher(code, storedAmount)) {
+      await collection.remove(encrypted)
+      await logConsumerAction(code, storedAmount, user)
+      reply.code(200).send({ status: 'claimed', amount: storedAmount, user })
+    } else {
+      return reply.code(400).send({ error: 'Validation failed' })
+    }
+  } catch (err) {
+    console.error('Claim with user error:', err)
+    reply.code(500).send({ error: 'Claim failed' })
   }
 }
 
