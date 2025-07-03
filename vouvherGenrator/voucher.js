@@ -60,5 +60,6 @@ function getEncodedVoucher(voucher){
 module.exports = {
     getEncodedVouchers,
     getDecodedVouchers,
-    getEncodedVoucher
+    getEncodedVoucher,
+    generateVoucher,
 };

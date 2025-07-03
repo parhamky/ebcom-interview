@@ -59,12 +59,8 @@ async function ensureMinVouchers(min = 200) {
   try {
     const count = await countAllVouchers();
     if (count >= min) return;
-
-    const collection = await getCollection();
     const needed = min - count;
-    console.log(`Refilling ${needed} vouchers to reach ${min}...`);
     await generateVouchers(needed);
-    console.log(`Refilled ${needed} vouchers.`);
   } catch (err) {
     console.error('Error in ensureMinVouchers:', err);
   } finally {
@@ -76,5 +72,6 @@ async function ensureMinVouchers(min = 200) {
 module.exports = {
     validateVoucher,
     generateVouchers,
+    countAllVouchers,
     ensureMinVouchers
 };
